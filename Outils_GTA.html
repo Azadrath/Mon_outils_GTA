@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Routine GTA Online</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0f0f0f;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Barre de Navigation Principale */
+        .main-header {
+            background-color: #1a1a1a;
+            display: none; 
+            justify-content: center;
+            border-bottom: 2px solid #55ff55;
+            padding-top: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .main-nav-btn {
+            background: none; border: none; color: #888;
+            padding: 15px 20px; cursor: pointer; font-size: 14px;
+            font-weight: bold; text-transform: uppercase; transition: 0.3s;
+        }
+        .main-nav-btn.active { color: #55ff55; border-bottom: 3px solid #55ff55; }
+
+        .container { padding: 20px; }
+        .page-section { display: none; }
+        .page-section.active { display: block; }
+
+        /* Gestion Personnage */
+        .char-manager {
+            max-width: 500px; margin: 0 auto; background: #1a1a1a;
+            padding: 20px; border-radius: 10px; border: 1px solid #333; text-align: center;
+        }
+        .char-list { display: flex; flex-direction: column; gap: 10px; margin: 20px 0; }
+        .char-card {
+            background: #262626; padding: 15px; border-radius: 5px;
+            display: flex; justify-content: space-between; align-items: center; border: 1px solid #444;
+        }
+        .char-card.active { border-color: #55ff55; background: #1b2e1b; }
+        
+        .creation-box {
+            background: #262626; padding: 15px; border-radius: 5px;
+            margin-top: 10px; text-align: left;
+        }
+        .creation-box label { font-size: 12px; color: #bbb; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+
+        .btn-select { background: #55ff55; color: #000; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-weight: bold; }
+        .btn-delete { background: #ff5555; color: #fff; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 10px; }
+        .input-char { background: #000; border: 1px solid #444; color: #fff; padding: 10px; width: calc(100% - 22px); border-radius: 5px; margin-bottom: 10px; }
+
+        /* Styles Toggles & Groups */
+        .management-panel { background-color: #1a1a1a; padding: 20px; border-radius: 10px; border: 1px solid #333; text-align: center; }
+        .toggle-container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; align-items: stretch; }
+        .farm-group-box { border: 1px solid #444; border-radius: 8px; padding: 15px; background: #222; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .farm-group-title { font-size: 10px; color: #888; text-transform: uppercase; font-weight: bold; margin-bottom: 5px; }
+        .button-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+
+        .tgl-btn { padding: 8px 15px; border-radius: 4px; border: 1px solid #444; background: #262626; color: #888; font-size: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.2s; min-width: 120px; }
+        .tgl-btn.active { background: #55ff55; color: #000; border-color: #55ff55; }
+        .tgl-farm-mode.active { background: #aa00ff; color: #fff; border-color: #aa00ff; }
+        
+        .video-link { color: #00bfff; font-size: 10px; text-decoration: none; font-weight: bold; text-transform: uppercase; margin-top: 5px; }
+        .video-link:hover { text-decoration: underline; }
+
+        /* Grid Activites */
+        .grid-container { display: flex; flex-wrap: wrap; gap: 15px; background-color: #1a1a1a; padding: 20px; border-radius: 10px; min-height: 50px; justify-content: center; }
+        .card { background-color: #262626; border: 2px solid #55ff55; border-radius: 8px; width: 220px; padding: 15px; text-align: center; display: flex; flex-direction: column; transition: transform 0.2s; }
+        .card.locked { border-color: #444; opacity: 0.8; }
+        .card:hover { transform: translateY(-5px); }
+        .card.complete-100 { border-color: #aa00ff; background: #1a0033; }
+        
+        .prio-badge { background: #55ff55; color: #000; font-size: 10px; font-weight: bold; padding: 2px 8px; border-radius: 10px; width: fit-content; margin: 0 auto 10px; }
+        .complete-badge { background: #aa00ff; color: #fff; }
+
+        .badge-container { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin-bottom: 8px; }
+        .badge { font-size: 8.5px; font-weight: bold; padding: 2px 5px; border-radius: 3px; text-transform: uppercase; color: white; white-space: nowrap; }
+
+        .badge-farm { background-color: #5555ff; } .badge-journa { background-color: #ffaa00; color: black; } .badge-hebdo { background-color: #aa00ff; }
+        .badge-agence { background-color: #4a69bd; } .badge-boite-nuit { background-color: #9b59b6; } .badge-bunker { background-color: #27ae60; }
+        .badge-club-moto { background-color: #2c3e50; } .badge-atelier-auto { background-color: #34495e; } .badge-caution { background-color: #e67e22; }
+        .badge-casse { background-color: #a35200; } .badge-arcade { background-color: #636e72; } .badge-acide { background-color: #2ecc71; }
+        .badge-kosatka { background-color: #5d0000; } .badge-braquage { background-color: #c0392b; } .badge-global { background-color: #7f8c8d; }
+        .badge-collectable { background-color: #16a085; } .badge-import-export { background-color: #2980b9; } .badge-ie-entrepot-voiture { background-color: #1e90ff; }
+        .badge-usine-vetements { background-color: #d35400; } .badge-terrorbyte { background-color: #2f3640; } .badge-laverie-auto { background-color: #1dd1a1; }
+
+        .timer-display { font-size: 20px; font-weight: bold; margin: 10px 0; }
+        button.action-btn { cursor: pointer; border: none; border-radius: 4px; padding: 8px; font-weight: bold; text-transform: uppercase; font-size: 11px; width: 100%; }
+        .btn-owned { background-color: #55ff55; color: #000; }
+        .btn-not-owned { background-color: #444; color: #888; }
+        .btn-start { background-color: #55ff55; color: #000; }
+        .btn-reset { background-color: #ff5555; color: #fff; display: none; }
+        .map-link { color: #00bfff; text-decoration: none; font-size: 11px; font-weight: bold; margin-bottom: 10px; display: block; }
+        .empty-msg { color: #555; font-style: italic; width: 100%; text-align: center; }
+
+        /* Business Selection Choice */
+        .priority-choice-box { background: #262626; padding: 15px; border-radius: 10px; border: 1px solid #55ff55; margin: 0 auto 20px; display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; max-width: 500px; text-align: center; }
+        .choice-buttons { display: flex; gap: 10px; }
+        .btn-choice { padding: 10px 20px; border-radius: 5px; border: 1px solid #444; background: #1a1a1a; color: #888; cursor: pointer; font-weight: bold; font-size: 11px; }
+        .btn-choice.active { background: #55ff55; color: #000; border-color: #55ff55; }
+        .choice-msg { font-size: 11px; color: #fff; font-weight: bold; line-height: 1.4; margin-bottom: 5px; }
+
+        /* Business Options */
+        .biz-opt-container { text-align: left; margin-top: 15px; border-top: 1px solid #444; padding-top: 10px; }
+        .biz-opt-item { display: flex; align-items: center; gap: 10px; font-size: 10px; color: #bbb; margin-bottom: 5px; cursor: pointer; }
+        .biz-opt-item input { accent-color: #55ff55; cursor: pointer; }
+        .sub-opt { padding-left: 25px; font-style: italic; color: #888; }
+        .facultatif-text { color: #ff5555; font-weight: bold; }
+        .vivid-text { color: #ffaa00; font-weight: bold; font-size: 9px; }
+
+        /* --- STYLE DEPART CONSEILLE --- */
+        .depart-list { list-style: none; padding: 0; margin: 20px 0; }
+        .depart-item { background: #262626; margin-bottom: 15px; padding: 20px; border-radius: 5px; border-left: 4px solid #55ff55; display: flex; align-items: flex-start; gap: 20px; transition: 0.3s; text-align: left; }
+        .depart-item input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; accent-color: #55ff55; margin-top: 4px; flex-shrink: 0; }
+        .depart-label { font-size: 14px; font-weight: bold; color: #eee; line-height: 1.8; }
+        .warning-internal { color: #ff5555; font-size: 11px; font-weight: bold; display: block; margin-top: 15px; text-transform: uppercase; }
+        .btn-reset-depart { background-color: #ff5555; color: white; border: none; padding: 10px; border-radius: 5px; font-weight: bold; text-transform: uppercase; cursor: pointer; width: 100%; }
+    </style>
+</head>
+<body>
+
+    <div class="main-header" id="main-nav-bar">
+        <button id="nav-routine-btn" class="main-nav-btn active" onclick="switchPage('routine')">Routine GTA Online</button>
+        <button id="nav-biz-btn" class="main-nav-btn" onclick="switchPage('biz')">Mes Business</button>
+        <button id="nav-depart-btn" class="main-nav-btn" onclick="switchPage('depart')">Depart conseille Enchanced</button>
+        <button id="nav-char-btn" class="main-nav-btn" onclick="switchPage('char')">Personnages</button>
+    </div>
+
+    <div class="container">
+        
+        <div id="page-char" class="page-section active">
+            <div class="char-manager">
+                <h2 style="border:none; margin-top:0;">Gestion de Personnage</h2>
+                <div id="char-list" class="char-list"></div>
+                <div class="creation-box">
+                    <input type="text" id="new-char-name" class="input-char" placeholder="Nom du nouveau personnage...">
+                    <label><input type="checkbox" id="check-depart-option" checked> premier personnage du compte</label>
+                </div>
+                <button class="btn-select" style="width:100%; margin-top:15px; padding:10px;" onclick="createNewCharacter()">Creer le personnage</button>
+            </div>
+        </div>
+
+        <div id="page-routine" class="page-section">
+            <div class="management-panel">
+                <h3 style="margin-top:0; font-size: 12px; color: #888;">TYPE DE FARM</h3>
+                <div class="toggle-container">
+                    <div class="farm-group-box">
+                        <div class="farm-group-title">Flemme</div>
+                        <button id="mode-ultra" class="tgl-btn tgl-farm-mode" onclick="setFarmMode('ultra')">Ultra leger</button>
+                        <a href="https://www.youtube.com/watch?v=K68YxlsfBS8" target="_blank" class="video-link">Video explicatif</a>
+                    </div>
+                    <div class="farm-group-box">
+                        <div class="farm-group-title">Boucles Express</div>
+                        <div class="button-row">
+                            <button id="mode-leger" class="tgl-btn tgl-farm-mode" onclick="setFarmMode('leger')">Leger</button>
+                            <button id="mode-normal" class="tgl-btn tgl-farm-mode" onclick="setFarmMode('normal')">Normal</button>
+                            <button id="mode-normalplus" class="tgl-btn tgl-farm-mode" onclick="setFarmMode('normalplus')">Normal +</button>
+                        </div>
+                        <a href="https://www.youtube.com/watch?v=pqb6NS5Rt7E" target="_blank" class="video-link">Video explicatif</a>
+                    </div>
+                    <div class="farm-group-box">
+                        <div class="farm-group-title">Optimisation</div>
+                        <button id="mode-entier" class="tgl-btn tgl-farm-mode active" onclick="setFarmMode('entier')">Entier (1 journee)</button>
+                        <a href="https://www.youtube.com/watch?v=VS2xhrMUDXI" target="_blank" class="video-link">Video explicatif</a>
+                    </div>
+                    <div class="farm-group-box">
+                        <div class="farm-group-title">Collectables</div>
+                        <button id="mode-jh" class="tgl-btn tgl-farm-mode" onclick="setFarmMode('jh')">Journa et Hebdo</button>
+                    </div>
+                </div>
+            </div>
+
+            <h2 id="active-char-title" style="color: #55ff55; margin-top:30px;">Personnage : Aucun</h2>
+            <h2>Activites Disponibles</h2>
+            <div class="grid-container" id="section-dispo"></div>
+            <h2 class="section-red">En rechargement / Attente</h2>
+            <div class="grid-container" id="section-encours">
+                <div class="empty-msg" id="empty-encours">Aucune activite.</div>
+            </div>
+        </div>
+
+        <div id="page-biz" class="page-section">
+            <h2 style="text-align:center;">Priorite d'achat des Business</h2>
+            <div class="priority-choice-box">
+                <div class="choice-msg">(Selon vos gout et vos choix) choisir ce que vous souhaitez faire en premier</div>
+                <div class="choice-buttons">
+                    <button id="choice-bureau" class="btn-choice" onclick="setPriorityChoice('bureau')">Bureau de PDG</button>
+                    <button id="choice-club" class="btn-choice" onclick="setPriorityChoice('club')">Club de motards</button>
+                </div>
+            </div>
+            <div class="grid-container" id="business-priority-list"></div>
+            
+            <h2 id="title-100" style="text-align:center; color:#aa00ff; margin-top:50px; display:none;">Business a 100%</h2>
+            <div class="grid-container" id="business-completed-list"></div>
+        </div>
+
+        <div id="page-depart" class="page-section">
+            <div class="char-manager" style="max-width:600px;">
+                <h2 style="border:none; margin-top:0;">Depart conseille Enchanced</h2>
+                <p style="color:#888; font-size:12px; margin-bottom:20px;">Cochez l'etape pour la valider et la masquer.</p>
+                <ul id="depart-task-list" class="depart-list"></ul>
+                <button class="btn-reset-depart" onclick="resetDepartTasks()">Reset la liste</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const activities = [
+            { id: 'roue', title: 'Roue du Casino', type: 'journa', cat: 'global', duration: 86400, mode: 'fixed' },
+            { id: 'contrat', title: 'Contrat telephonique', type: 'farm', cat: 'agence', duration: 600, mode: 'fixed' },
+            { id: 'secu', title: 'Contrat de securite', type: 'farm', cat: 'agence', duration: 300, mode: 'fixed' },
+            { id: 'gcache', title: 'Cache de Gerald', type: 'journa', cat: 'collectable', mode: 'global' },
+            { id: 'tag', title: 'Tags', type: 'journa', cat: 'collectable', mode: 'global', map: true },
+            { id: 'epave', title: 'Epave', type: 'journa', cat: 'global', mode: 'global', map: true },
+            { id: 'hsw', title: 'Course HSW', type: 'hebdo', cat: 'global', mode: 'weekly' },
+            { id: 'clm', title: 'CLM Classique', type: 'hebdo', cat: 'global', mode: 'weekly' },
+            { id: 'rc', title: 'RC Bandito', type: 'journa', cat: 'global', mode: 'global' },
+            { id: 'junk', title: 'Junk Energy', type: 'journa', cat: 'global', mode: 'global' },
+            { id: 'biens', title: 'Export Biens Divers', type: 'farm', cat: 'import-export', duration: 2880, mode: 'fixed' },
+            { id: 'nightclub', title: 'Coffre + Mission Boite de Nuit', type: 'farm', cat: 'boite-nuit', duration: 2880, mode: 'fixed' },
+            { id: 'bunker', title: 'Livraison Ammu-Nation (Bunker)', type: 'farm', cat: 'bunker', duration: 2880, mode: 'fixed' },
+            { id: 'moto1', title: 'Client Club Moto 1', type: 'farm', cat: 'club-moto', duration: 2880, mode: 'fixed' },
+            { id: 'moto2', title: 'Client Club Moto 2', type: 'farm', cat: 'club-moto', duration: 2880, mode: 'fixed' },
+            { id: 'auto1', title: 'Client Atelier Auto 1', type: 'farm', cat: 'atelier-auto', duration: 2880, mode: 'fixed' },
+            { id: 'auto2', title: 'Client Atelier Auto 2', type: 'farm', cat: 'atelier-auto', duration: 2880, mode: 'fixed' },
+            { id: 'vehicule', title: 'Livraison Entrepot Vehicule', type: 'farm', cat: 'ie-entrepot-voiture', duration: 1200, mode: 'fixed' },
+            { id: 'agentcaution', title: 'Agent + Coffre Caution', type: 'farm', cat: 'caution', duration: 2880, mode: 'fixed' },
+            { id: 'vipcaution', title: 'Cible VIP Caution', type: 'journa', cat: 'caution', mode: 'global' },
+            { id: 'coffrecasse', title: 'Coffre de la Casse', type: 'farm', cat: 'casse', duration: 2880, mode: 'fixed' },
+            { id: 'voiturecasse1', title: 'Voiture de la Casse 1', type: 'farm', cat: 'casse', duration: 2880, mode: 'fixed' },
+            { id: 'lavage', title: 'Coffre Station Lavage', type: 'farm', cat: 'boite-nuit', duration: 2880, mode: 'fixed' },
+            { id: 'arcade', title: 'Coffre Salle Arcade', type: 'farm', cat: 'arcade', duration: 2880, mode: 'fixed' },
+            { id: 'agence', title: "Coffre de l'Agence", type: 'farm', cat: 'agence', duration: 2880, mode: 'fixed' },
+            { id: 'voiturecasse2', title: 'Voiture de la Casse 2', type: 'farm', cat: 'casse', duration: 2880, mode: 'fixed' },
+            { id: 'dax', title: 'Mission Dax', type: 'farm', cat: 'acide', duration: 2880, mode: 'fixed' },
+            { id: 'union', title: 'Union Depository', type: 'farm', cat: 'braquage', duration: 2880, mode: 'fixed' },
+            { id: 'cluckin', title: "L'usine Cluckin Bell", type: 'farm', cat: 'braquage', duration: 2880, mode: 'fixed' },
+            { id: 'knoway', title: 'KnoWay Out', type: 'farm', cat: 'braquage', duration: 2880, mode: 'fixed' },
+            { id: 'cayo', title: 'Cayo Perico', type: 'farm', cat: 'kosatka', duration: 8640, mode: 'fixed', tuto: 'https://www.youtube.com/watch?v=kQVa94GaYVA' },
+            { id: 'drdre', title: 'Contrat VIP Dr. Dre', type: 'farm', cat: 'agence', duration: 2880, mode: 'fixed' }
+        ];
+
+        const departTasks = [
+            { label: "Business : Boite de nuit - Mission Row - Omega<br><br>Vehicule : Shitzu Hakuchou Drag<br><br>Arme : Carabine Speciale VOM FEUR + pistolet automatique VOM FEUR<br><br>+ 1 000 000 $" },
+            { label: "Creation d'une organisation + Focus mission preparation Boite de nuit.<br><br><span class='warning-internal'>Attention : vous pouvez faire tout cela en prive pour eviter les joueur toxic !</span>" },
+            { label: "Rejoindre le club du casino + tourner la roue" },
+            { label: "Faire la course d'hao (Vehicule d'hao sur la map)<br><br>Rejoindre le salon auto et acheter la carte membre<br><br>Applique l'amelioration HSW dans le salon auto sur l'Hakuchou Drag" },
+            { label: "Faire la course contre la montre HSW<br><br>Faire la course contre la montre classique<br><br>Faire la course junk energy" },
+            { label: "Faire les tags dans la ville<br><br>Recuperer l'epave<br><br><a href='https://gtaweb.eu/gtao-map/ls/dt9qqzw4kd6n5ebuht4bzevcun462weq3ojui603k' target='_blank' class='video-link' style='font-size:12px;'>[ MAP ]</a>" },
+            { label: "Planque de Gerald<br><br>Colis de Gerald<br><br>Recuperer les revenus de la boite de nuit" },
+            { label: "Debloquer le Navy Revolver<br><br>Faire les primes de Maude (Hachette en pierre) Ne pas oublier d'ouvrir le SMS<br><br>Debloquer le revolver double action<br><br>Recuperer les revenus de la boite de nuit" },
+            { label: "Lancer la mission De mal en Pier (tuer seulement les pietons sur la jetee)<br><br>Effectuer tous les defis des armes recuperer precedement (inutile de finir la mission)" },
+            { label: "Effectuer les missions Premiere dose<br><br>Effectuer les missions de Dax en appelant des que possible entre les missions (ne pas faire la mission meryweather) + recup du coffre de la boite de nuit si dispo<br><br>Effectuer les missions Derniere dose" },
+            { label: "Effectuer le braquage le raid de cluckin bell (prepa + braquage)<br><br>Effectuer les missions de Dax en appelant des que possible entre les missions (ne pas faire la mission meryweather) + recup du coffre de la boite de nuit si dispo" },
+            { label: "Faire le braquage KnoWay Out (prepa + braquage)<br><br>Effectuer les missions de Dax en appelant des que possible entre les missions (ne pas faire la mission meryweather) + recup du coffre de la boite de nuit si dispo" },
+            { label: "Aller au music locker, acheter la carte membre puis aller voir Miguel Madrazo<br><br>Acheter le Kosatka (Warstock cache and carry)<br><br>Acheter l'agence avec armurerie (Dynasty 8 executive)" },
+            { label: "Faire cayo perico (puis acheter le sparrow avec l'argent)<br><a href='https://www.youtube.com/watch?v=cxi7ehPKQ_w' target='_blank' class='video-link' style='font-size:12px;'>[ video pour votre premier braquage ]</a><br><br>Faire la mission VIP de Dr Dre avec l'agence (faire quelque contrat pour le debloquer et entre les missions de Dr Dre en attendant, priorite au contrat telephonique)<br><a href='https://www.youtube.com/watch?v=3RZenVDfiMM' target='_blank' class='video-link' style='font-size:12px;'>[ tuto ]</a>" }
+        ];
+
+        const ultraIds = ['contrat', 'secu', 'moto1', 'moto2', 'auto1', 'auto2'];
+        const legerIds = ['contrat', 'cayo', 'nightclub', 'moto1'];
+        const normalIds = ['contrat', 'cayo', 'nightclub', 'moto1', 'union'];
+        const normalPlusIds = ['contrat', 'cayo', 'nightclub', 'moto1', 'union', 'cluckin'];
+
+        let timers = {};
+        let characters = JSON.parse(localStorage.getItem('gta_characters')) || [];
+        let activeChar = localStorage.getItem('gta_active_char') || null;
+        let ownedBusinesses = {};
+        let currentFarmMode = 'entier';
+        let hiddenDepartTasks = [];
+        let prioPref = 'bureau';
+
+        function init() {
+            renderCharList();
+            if (activeChar && characters.includes(activeChar)) {
+                loadCharacterData();
+                const settings = JSON.parse(localStorage.getItem(activeChar + '_settings')) || { showDepart: true };
+                document.getElementById('main-nav-bar').style.display = 'flex';
+                document.getElementById('nav-depart-btn').style.display = settings.showDepart ? 'block' : 'none';
+                switchPage('routine');
+                renderBusinessPriority();
+                initCards();
+                renderDepartTasks();
+                refreshAllStates();
+            } else {
+                document.getElementById('main-nav-bar').style.display = 'none';
+                switchPage('char');
+            }
+        }
+
+        function loadCharacterData() {
+            document.getElementById('active-char-title').innerText = "Personnage : " + activeChar;
+            ownedBusinesses = JSON.parse(localStorage.getItem(activeChar + '_owned_biz')) || {};
+            currentFarmMode = localStorage.getItem(activeChar + '_farm_mode') || 'entier';
+            prioPref = localStorage.getItem(activeChar + '_prio_pref_67') || 'bureau';
+            updateChoiceButtons();
+        }
+
+        function setPriorityChoice(choice) {
+            prioPref = choice;
+            localStorage.setItem(activeChar + '_prio_pref_67', choice);
+            updateChoiceButtons();
+            renderBusinessPriority();
+            refreshAllStates();
+        }
+
+        function updateChoiceButtons() {
+            const btnB = document.getElementById('choice-bureau'), btnC = document.getElementById('choice-club');
+            if(btnB && btnC) { btnB.classList.toggle('active', prioPref === 'bureau'); btnC.classList.toggle('active', prioPref === 'club'); }
+        }
+
+        function getBusinessStatus(asset) {
+            if (!ownedBusinesses[asset.cat]) return 'todo';
+            
+            // Mandatory = lignes qui ne sont ni (facultatif) ni orange (vivid-text)
+            const mandatory = asset.options.filter(o => !o.label.includes('(facultatif)'));
+            const mandatoryDone = mandatory.every(o => ownedBusinesses[o.id]);
+            
+            // allDone = TOUTES les options cochées
+            const allDone = asset.options.every(o => ownedBusinesses[o.id]);
+            
+            if (allDone) return 'complete100';
+            if (mandatoryDone) return 'optionalOnly'; 
+            return 'todo'; 
+        }
+
+        function renderBusinessPriority() {
+            const prioContainer = document.getElementById('business-priority-list');
+            const compContainer = document.getElementById('business-completed-list');
+            if(!prioContainer || !compContainer) return;
+            prioContainer.innerHTML = ''; compContainer.innerHTML = '';
+            
+            const vOrange = ' <span class="vivid-text">(apres amelioration de la boite de nuit seulement)</span>';
+            const vOrangeWeed = ' <span class="vivid-text">(apres achat de laverie auto + smoke on the water seulement)</span>';
+            const vOrangePDG = ' <span class="vivid-text">(apres le bureau des cautions)</span>';
+            const vGreenManoir = ' <span style="color:#55ff55; font-weight:bold; font-size:9px;">(tout les ameliorations securite deviennent utile)</span>';
+
+            let assets = [
+                { id: 'kosatka', label: 'KOSATKA', cat: 'kosatka', prio: 1, options: [{ id: 'sparrow', label: 'Sparrow' }, { id: 'sonar', label: 'Sonar (facultatif)' }, { id: 'missile', label: 'Missile autoguides (facultatif)' }, { id: 'atelier-arme-kos', label: 'Ateliers d armes (facultatif)' }, { id: 'kraken', label: 'Kraken Avisa (facultatif)' }] },
+                { id: 'agence', label: 'AGENCE', cat: 'agence', prio: 2, videoLink: { label: 'Tuto', url: 'https://www.youtube.com/watch?v=3RZenVDfiMM' }, options: [{ id: 'armurerie', label: 'Armurerie' }, { id: 'logement', label: 'Logement (facultatif)' }, { id: 'atelier-vehicule', label: 'Atelier vehicule (facultatif)' }] },
+                { id: 'atelier-auto', label: 'ATELIER AUTO', cat: 'atelier-auto', prio: 3, videoLink: { label: 'Tuto', url: 'https://www.youtube.com/watch?v=P5ikkNYH17A' }, options: [{ id: 'pont-elevateur', label: 'Pont elevateur' }, { id: 'personnel-auto', label: 'Personnel (facultatif)' }, { id: 'logement-auto', label: 'Espace personnel (facultatif)' }] }
+            ];
+
+            const bureau = { id: 'import-export', label: 'BUREAU DE PDG', cat: 'import-export', videoLink: { label: 'Tuto', url: 'https://www.youtube.com/watch?v=o3SPX3O5HmY&t=2s' }, options: [{ id: 'entrepot-mini', label: 'entrepot' }, { id: 'entrepot-voiture', label: 'entrepot voiture' + vOrangePDG }, { id: 'coffre-pdg', label: 'Coffre-fort (facultatif)' }, { id: 'arm-pdg', label: 'Armurerie (facultatif)' }, { id: 'log-pdg', label: 'Logement (facultatif)' }] };
+            const club = { 
+                id: 'club-moto', label: 'CLUB DE MOTARDS', cat: 'club-moto', videoLink: { label: 'Tuto', url: 'https://www.youtube.com/watch?v=4GQNZKdU87o' }, 
+                options: [
+                    { id: 'atelier-mc', label: 'atelier moto' }, 
+                    { id: 'prod-coke', label: 'prod cocaine' }, 
+                    { id: 'coke-mat', label: 'materiel' + vOrange, sub: true }, { id: 'coke-perso', label: 'personnel' + vOrange, sub: true }, { id: 'coke-secu', label: 'securite (facultatif)', sub: true },
+                    { id: 'prod-meth', label: 'prod meth' }, 
+                    { id: 'meth-mat', label: 'materiel' + vOrange, sub: true }, { id: 'meth-perso', label: 'personnel' + vOrange, sub: true }, { id: 'meth-secu', label: 'securite (facultatif)', sub: true },
+                    { id: 'prod-cash', label: 'prod fausse monnaie' }, 
+                    { id: 'cash-mat', label: 'materiel' + vOrange, sub: true }, { id: 'cash-perso', label: 'personnel' + vOrange, sub: true }, { id: 'cash-secu', label: 'securite (facultatif)', sub: true },
+                    { id: 'prod-weed', label: 'prod herbe' + vOrangeWeed }, 
+                    { id: 'weed-mat', label: 'materiel', sub: true }, { id: 'weed-perso', label: 'personnel', sub: true }, { id: 'weed-secu', label: 'securite (facultatif)', sub: true },
+                    { id: 'prod-docs', label: 'prod faux papier (facultatif)' },
+                    { id: 'docs-mat', label: 'materiel (facultatif)', sub: true }, { id: 'docs-perso', label: 'personnel (facultatif)', sub: true }, { id: 'docs-secu', label: 'securite (facultatif)', sub: true },
+                    { id: 'arm-mc', label: 'armurerie (facultatif)' }
+                ] 
+            };
+
+            if(prioPref === 'bureau') { bureau.prio = 4; club.prio = 5; assets.push(bureau, club); }
+            else { club.prio = 4; bureau.prio = 5; assets.push(club, bureau); }
+
+            assets.push(
+                { id: 'bunker', label: 'BUNKER', cat: 'bunker', prio: 6, videoLink: { label: 'Tuto', url: 'https://www.youtube.com/watch?v=s1ALq7cd_QI&t=52s' }, options: [{ id: 'bunk-tir', label: 'stand de tir' }, { id: 'mat-bunk', label: 'materiel' }, { id: 'perso-bunk', label: 'personnel' }, { id: 'secu-bunk', label: 'securite (facultatif)' }, { id: 'bunk-log', label: 'espace personnel (facultatif)' }, { id: 'bunk-arm', label: 'armurerie (facultatif)' }, { id: 'bunk-trans', label: 'transport (facultatif)' }] },
+                { id: 'boite-nuit', label: 'BOITE DE NUIT', cat: 'boite-nuit', prio: 7, videoLink: { label: 'Tuto', url: 'https://www.youtube.com/watch?v=XDll4lKCoKA' }, options: [{ id: 'ent-2', label: 'entrepot 2' }, { id: 'ent-3', label: 'entrepot 3' }, { id: 'ent-4', label: 'entrepot 4' }, { id: 'ent-5', label: 'entrepot 5' }, { id: 'tech-2', label: 'technicien 2' }, { id: 'tech-3', label: 'technicien 3' }, { id: 'tech-4', label: 'technicien 4' }, { id: 'tech-5', label: 'technicien 5' }, { id: 'mat-boite', label: 'materiel' }, { id: 'perso-boite', label: 'personnel' }, { id: 'secu-boite', label: 'securite (facultatif)' }] },
+                { id: 'acide', label: 'LABO D ACIDE', cat: 'acide', prio: 8, videoLink: { label: 'Tuto', url: 'https://www.youtube.com/watch?v=DVDEVHp4Zm0' }, options: [{ id: 'acide-inst', label: 'installation du materiel' }, { id: 'acide-up', label: 'amelioration du materiel' }] },
+                { id: 'usine-vetements', label: 'USINE DE VETEMENTS', cat: 'usine-vetements', prio: 9, videoLink: { label: 'Tuto', url: 'https://www.youtube.com/watch?v=1TpfQUjTXGM' }, options: [] },
+                { id: 'terrorbyte', label: 'VEHICULE TERRORBYTE', cat: 'terrorbyte', prio: 10, options: [{ id: 'tb-atelier', label: 'atelier specialise' }, { id: 'tb-terminal', label: 'terminal de controle globale' }, { id: 'tb-opressor', label: 'Oppressor mk2' }, { id: 'tb-tourelle', label: 'station tourelle (facultatif)' }, { id: 'tb-drone', label: 'station drone (facultatif)' }, { id: 'tb-armes', label: 'atelier d armes (facultatif)' }] },
+                { id: 'laverie-auto', label: 'LAVERIE AUTO', cat: 'laverie-auto', prio: 11, videoLink: { label: 'Tuto', url: 'https://www.youtube.com/watch?v=1wgSofpxIyc' }, options: [{id: 'lp-qp', label: 'quickiepharm'}, {id: 'lp-hh', label: 'higgins helitours'}, {id: 'lp-sow', label: 'smoke on the water'}] },
+                { id: 'hangar', label: 'HANGAR', cat: 'hangar', prio: 12, videoLink: { label: 'Tuto', url: 'https://www.youtube.com/watch?v=dAaSGjo1mxk' }, options: [{ id: 'hangar-at', label: 'Atelier' }, { id: 'hangar-app', label: 'Appartement (facultatif)' }] },
+                { id: 'casse', label: 'LA CASSE', cat: 'casse', prio: 13, videoLink: { label: 'Tuto', url: 'https://www.youtube.com/watch?v=YeNb6VbsqAI' }, options: [{ id: 'casse-tar', label: 'Tarifs Speciaux' }, { id: 'casse-dep', label: 'depaneuse' }, { id: 'casse-cof', label: 'coffre fort personnel' }] },
+                { id: 'caution', label: 'BUREAU DES CAUTIONS', cat: 'caution', prio: 14, videoLink: { label: 'Tuto', url: 'https://www.youtube.com/watch?v=DqvknmJ1HQ4' }, options: [{ id: 'caution-ag1', label: 'Agent 1' }, { id: 'caution-ag2', label: 'Agent 2' }, { id: 'caution-blin', label: 'blindage' }, { id: 'caution-log', label: 'espace personnel (facultatif)' }, { id: 'caution-arm', label: 'armurerie (facultatif)' }] },
+                { id: 'mckenzie', label: 'HANGAR DE MCKENZIE', cat: 'mckenzie', prio: 15, options: [] },
+                { id: 'manoir', label: 'LE MANOIR', cat: 'manoir', prio: 16, options: [{ id: 'manoir-secu', label: 'securite ' + vGreenManoir }] },
+                { id: 'arcade', label: 'SALLE D ARCADE', cat: 'arcade', prio: 17, options: [{ id: 'arcade-bornes', label: 'toutes les borne d arcade' }] },
+                { id: 'complexe', label: 'LE COMPLEXE', cat: 'complexe', prio: 18, options: [] }
+            );
+
+            // Classification des listes
+            const todoList = [];          
+            const optionalOnlyList = [];  
+            const complete100List = [];   
+
+            assets.forEach(asset => {
+                const status = getBusinessStatus(asset);
+                if (status === 'complete100') complete100List.push(asset);
+                else if (status === 'optionalOnly') optionalOnlyList.push(asset);
+                else todoList.push(asset);
+            });
+
+            // Rendu ordonné
+            todoList.sort((a,b) => a.prio - b.prio).forEach(a => createBizCard(a, prioContainer));
+            optionalOnlyList.sort((a,b) => a.prio - b.prio).forEach(a => createBizCard(a, prioContainer));
+            
+            document.getElementById('title-100').style.display = complete100List.length > 0 ? 'block' : 'none';
+            complete100List.sort((a,b) => a.prio - b.prio).forEach(a => createBizCard(a, compContainer, true));
+        }
+
+        function createBizCard(asset, container, is100 = false) {
+            const isOwned = ownedBusinesses[asset.cat] === true;
+            const card = document.createElement('div');
+            card.className = `card ${!isOwned ? 'locked' : ''} ${is100 ? 'complete-100' : ''}`;
+            
+            let videoHtml = asset.videoLink ? `<a href="${asset.videoLink.url}" target="_blank" class="video-link" style="display:block; margin-bottom:10px;">[ ${asset.videoLink.label} ]</a>` : '';
+            
+            let optionsHtml = '';
+            if (asset.options.length > 0) {
+                optionsHtml = `<div class="biz-opt-container">`;
+                asset.options.forEach(opt => {
+                    const optOwned = ownedBusinesses[opt.id] === true;
+                    let labelHtml = opt.label.replace('(facultatif)', '<span class="facultatif-text">(facultatif)</span>');
+                    optionsHtml += `<label class="biz-opt-item ${opt.sub ? 'sub-opt' : ''}"><input type="checkbox" ${optOwned ? 'checked' : ''} onchange="toggleBizOption('${opt.id}')"> ${labelHtml}</label>`;
+                });
+                optionsHtml += `</div>`;
+            }
+            card.innerHTML = `<div class="prio-badge ${is100 ? 'complete-badge' : ''}">${is100 ? 'TERMINE' : 'PRIORITE ' + asset.prio}</div><div class="timer-title" style="font-size:14px; font-weight:bold;">${asset.label}</div><div class="timer-display" style="font-size:12px; margin:10px 0; color:${isOwned ? (is100 ? '#aa00ff' : '#55ff55') : '#888'}">${isOwned ? 'POSSEDE' : 'NON ACQUIS'}</div>${videoHtml}<button class="action-btn ${isOwned ? 'btn-owned' : 'btn-not-owned'}" onclick="toggleBusinessMain('${asset.cat}')">${isOwned ? 'Valide' : 'Acheter'}</button>${optionsHtml}`;
+            container.appendChild(card);
+        }
+
+        // --- SYSTEM FUNCTIONS ---
+        function renderCharList() {
+            const list = document.getElementById('char-list'); if(!list) return;
+            list.innerHTML = '';
+            characters.forEach(name => {
+                const div = document.createElement('div'); div.className = `char-card ${name === activeChar ? 'active' : ''}`;
+                div.innerHTML = `<span>${name}</span><div style="display:flex; gap:10px;"><button class="btn-select" onclick="selectCharacter('${name}')">Choisir</button><button class="btn-delete" onclick="deleteCharacter('${name}')">Supprimer</button></div>`;
+                list.appendChild(div);
+            });
+        }
+        function createNewCharacter() {
+            const nameInput = document.getElementById('new-char-name');
+            const name = nameInput.value.trim();
+            const showDepart = document.getElementById('check-depart-option').checked;
+            if (name && !characters.includes(name)) {
+                characters.push(name);
+                localStorage.setItem('gta_characters', JSON.stringify(characters));
+                localStorage.setItem(name + '_settings', JSON.stringify({ showDepart: showDepart }));
+                nameInput.value = ''; selectCharacter(name);
+            }
+        }
+        function selectCharacter(name) { activeChar = name; localStorage.setItem('gta_active_char', name); location.reload(); }
+        function deleteCharacter(name) {
+            if(confirm(`Supprimer ${name} ?`)) {
+                characters = characters.filter(c => c !== name); localStorage.setItem('gta_characters', JSON.stringify(characters));
+                const keys = Object.keys(localStorage).filter(k => k.startsWith(name + '_')); keys.forEach(k => localStorage.removeItem(k));
+                localStorage.removeItem(name + '_settings'); if (activeChar === name) localStorage.removeItem('gta_active_char');
+                location.reload();
+            }
+        }
+        function switchPage(page) {
+            document.querySelectorAll('.main-nav-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+            const section = document.getElementById('page-' + page); if(section) section.classList.add('active');
+            const btn = document.getElementById('nav-' + page + '-btn'); if(btn) btn.classList.add('active');
+        }
+        function toggleBusinessMain(cat) {
+            ownedBusinesses[cat] = !ownedBusinesses[cat];
+            localStorage.setItem(activeChar + '_owned_biz', JSON.stringify(ownedBusinesses));
+            renderBusinessPriority(); refreshAllStates();
+        }
+        function toggleBizOption(optId) {
+            ownedBusinesses[optId] = !ownedBusinesses[optId];
+            localStorage.setItem(activeChar + '_owned_biz', JSON.stringify(ownedBusinesses));
+            renderBusinessPriority();
+        }
+        function initCards() {
+            const container = document.getElementById('section-dispo'); if(!container) return;
+            container.innerHTML = '';
+            activities.forEach(act => {
+                const card = document.createElement('div'); card.className = 'card'; card.id = 'card-' + act.id;
+                let map = act.map ? `<a href="https://gtaweb.eu/gtao-map" target="_blank" class="map-link">[ Voir la carte ]</a>` : '';
+                let tuto = act.tuto ? `<a href="${act.tuto}" target="_blank" class="video-link tuto-link" style="display:block; margin-bottom:10px;">[ Tuto ]</a>` : '';
+                card.innerHTML = `<div class="badge-container"><span class="badge badge-${act.type}">${act.type}</span><span class="badge badge-${act.cat}">${act.cat.replace(/-/g, ' ')}</span></div><div class="timer-title">${act.title}</div>${map}${tuto}<div class="timer-display" id="display-${act.id}">PRET !</div><button class="action-btn btn-start" onclick="triggerStart('${act.id}')">Valider</button><button class="action-btn btn-reset" onclick="resetTimer('${act.id}')">Annuler</button>`;
+                container.appendChild(card);
+            });
+        }
+        function triggerStart(id) {
+            const act = activities.find(a => a.id === id); let endTime;
+            if (act.mode === 'fixed') endTime = Date.now() + (act.duration * 1000);
+            else if (act.mode === 'global') { let r = new Date(); r.setUTCHours(6, 0, 0, 0); if (Date.now() >= r.getTime()) r.setUTCDate(r.getUTCDate() + 1); endTime = r.getTime(); }
+            else if (act.mode === 'weekly') { let r = new Date(); r.setHours(11, 0, 0, 0); let d = (4 - r.getDay() + 7) % 7; if (d === 0 && Date.now() >= r.getTime()) d = 7; r.setDate(r.getDate() + d); endTime = r.getTime(); }
+            localStorage.setItem(activeChar + '_' + id + '_endTime', endTime); runTimer(id, endTime);
+            refreshAllStates();
+        }
+        function runTimer(id, endTime) {
+            setCardState(id, true); if (timers[id]) clearInterval(timers[id]);
+            timers[id] = setInterval(() => { const dist = endTime - Date.now(); if (dist <= 0) { clearInterval(timers[id]); refreshAllStates(); } else updateDisplay(id, dist); }, 1000);
+            updateDisplay(id, endTime - Date.now());
+        }
+        function updateDisplay(id, dist) {
+            const display = document.getElementById('display-' + id); if(!display) return;
+            const d = Math.floor(dist / 86400000), h = Math.floor((dist % 86400000) / 3600000), m = Math.floor((dist % 3600000) / 60000), s = Math.floor((dist % 60000) / 1000);
+            display.innerHTML = (d > 0 ? d + "j " : "") + String(h).padStart(2, '0') + ":" + String(m).padStart(2, '0') + ":" + String(s).padStart(2, '0');
+        }
+        function resetTimer(id) { if (timers[id]) clearInterval(timers[id]); localStorage.removeItem(activeChar + '_' + id + '_endTime'); refreshAllStates(); }
+        
+        function setFarmMode(mode) {
+            currentFarmMode = mode; localStorage.setItem(activeChar + '_farm_mode', mode);
+            document.querySelectorAll('.tgl-farm-mode').forEach(b => b.classList.remove('active'));
+            const target = document.getElementById('mode-' + mode); if(target) target.classList.add('active');
+            refreshAllStates();
+        }
+
+        function refreshAllStates() {
+            activities.forEach(act => {
+                const end = localStorage.getItem(activeChar + '_' + act.id + '_endTime');
+                if (end && parseInt(end) > Date.now()) runTimer(act.id, parseInt(end));
+                else setCardState(act.id, false);
+            });
+        }
+
+        function setCardState(id, isRunning) {
+            const act = activities.find(a => a.id === id); const card = document.getElementById('card-' + id); if(!card) return;
+            const display = document.getElementById('display-' + id); 
+            const btnS = card.querySelector('.btn-start'), 
+                  btnR = card.querySelector('.btn-reset'), 
+                  map = card.querySelector('.map-link'),
+                  tuto = card.querySelector('.tuto-link');
+
+            if (id === 'secu' && currentFarmMode !== 'ultra') { card.style.display = 'none'; return; }
+            const alwaysOn = ['global', 'collectable', 'braquage'].includes(act.cat);
+            if (!alwaysOn && !ownedBusinesses[act.cat]) { card.style.display = 'none'; return; }
+
+            let modeVis = false;
+            if (currentFarmMode === 'entier') modeVis = true;
+            else if (currentFarmMode === 'jh') modeVis = (act.type === 'journa' || act.type === 'hebdo');
+            else if (currentFarmMode === 'ultra') modeVis = ultraIds.includes(id);
+            else if (currentFarmMode === 'leger') modeVis = legerIds.includes(id);
+            else if (currentFarmMode === 'normal') modeVis = normalIds.includes(id);
+            else if (currentFarmMode === 'normalplus') modeVis = normalPlusIds.includes(id);
+
+            if (!modeVis) { card.style.display = 'none'; return; }
+            card.style.display = 'flex';
+
+            const endValue = localStorage.getItem(activeChar + '_' + id + '_endTime');
+            const dreIs = localStorage.getItem(activeChar + '_drdre_endTime') > Date.now(), motoIs = localStorage.getItem(activeChar + '_moto1_endTime') > Date.now(), unionIs = localStorage.getItem(activeChar + '_union_endTime') > Date.now(), cluckIs = localStorage.getItem(activeChar + '_cluckin_endTime') > Date.now();
+            
+            let lock = false, msg = "ATTENTE";
+            if (currentFarmMode === 'entier') { lock = ownedBusinesses['agence'] && !dreIs; msg = "ATTENTE DRE"; }
+            else if (currentFarmMode === 'leger') { lock = !motoIs; msg = "ATTENTE MOTO"; }
+            else if (currentFarmMode === 'normal') { lock = !unionIs; msg = "ATTENTE UNION"; }
+            else if (currentFarmMode === 'normalplus') { lock = !cluckIs; msg = "ATTENTE CLUCKIN"; }
+
+            if (isRunning) {
+                document.getElementById('section-encours').appendChild(card);
+                btnS.style.display = 'none'; btnR.style.display = 'block'; card.style.borderColor = '#ff5555'; display.style.color = '#ff5555'; 
+                if (map) map.style.display = 'none';
+                if (tuto) tuto.style.display = 'none';
+            } else {
+                const isExc = (id === 'drdre' || id === 'contrat' || id === 'nightclub' || id === 'moto1' || id === 'union' || id === 'cluckin');
+                if (!endValue || isExc || !lock) {
+                    document.getElementById('section-dispo').appendChild(card);
+                    btnS.style.display = 'block'; btnR.style.display = 'none'; display.innerHTML = 'PRET !'; display.style.color = '#fff'; card.style.borderColor = '#55ff55'; 
+                    if (map) map.style.display = 'block';
+                    if (tuto) tuto.style.display = 'block';
+                } else {
+                    document.getElementById('section-encours').appendChild(card);
+                    btnS.style.display = 'none'; btnR.style.display = 'none'; display.innerHTML = msg; display.style.color = '#888'; card.style.borderColor = '#444'; 
+                    if (map) map.style.display = 'none';
+                    if (tuto) tuto.style.display = 'none';
+                }
+                sortDispo();
+            }
+            checkEmpty();
+        }
+
+        function sortDispo() {
+            const container = document.getElementById('section-dispo');
+            let order = [];
+            if (currentFarmMode === 'leger') order = legerIds;
+            else if (currentFarmMode === 'normal') order = normalIds;
+            else if (currentFarmMode === 'normalplus') order = normalPlusIds;
+            else if (currentFarmMode === 'ultra') order = ultraIds;
+
+            if (order.length > 0) {
+                Array.from(container.children).sort((a, b) => {
+                    const idA = a.id.replace('card-', ''), idB = b.id.replace('card-', '');
+                    let idxA = order.indexOf(idA), idxB = order.indexOf(idB);
+                    if (idxA === -1) idxA = 999; if (idxB === -1) idxB = 999;
+                    return idxA - idxB;
+                }).forEach(node => container.appendChild(node));
+            }
+        }
+
+        function checkEmpty() {
+            const encours = document.getElementById('section-encours'); if(!encours) return;
+            const cards = Array.from(encours.querySelectorAll('.card')).filter(c => c.style.display !== 'none');
+            document.getElementById('empty-encours').style.display = (cards.length > 0) ? 'none' : 'block';
+        }
+
+        function renderDepartTasks() {
+            const list = document.getElementById('depart-task-list'); if(!list) return;
+            list.innerHTML = '';
+            hiddenDepartTasks = JSON.parse(localStorage.getItem(activeChar + '_hidden_depart')) || [];
+            departTasks.forEach((task, index) => {
+                if (!hiddenDepartTasks.includes(index)) {
+                    const li = document.createElement('li'); li.className = 'depart-item';
+                    li.innerHTML = `<input type="checkbox" onchange="hideDepartTask(${index})"><span class="depart-label">${task.label}</span>`;
+                    list.appendChild(li);
+                }
+            });
+        }
+        function hideDepartTask(index) {
+            hiddenDepartTasks.push(index);
+            localStorage.setItem(activeChar + '_hidden_depart', JSON.stringify(hiddenDepartTasks));
+            setTimeout(renderDepartTasks, 300);
+        }
+        function resetDepartTasks() {
+            hiddenDepartTasks = [];
+            localStorage.setItem(activeChar + '_hidden_depart', JSON.stringify(hiddenDepartTasks));
+            renderDepartTasks();
+        }
+
+        init();
+    </script>
+</body>
+</html>
