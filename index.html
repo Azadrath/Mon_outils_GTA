@@ -67,7 +67,6 @@
         .tgl-btn.active { background: #55ff55; color: #000; border-color: #55ff55; }
         .tgl-farm-mode.active { background: #aa00ff; color: #fff; border-color: #aa00ff; }
         
-        /* Bouton Reset Boucle */
         .btn-reset-loop { background-color: #aa00ff; color: white; border: none; padding: 12px 25px; border-radius: 5px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 20px; font-size: 12px; transition: 0.3s; }
         .btn-reset-loop:hover { background-color: #cc33ff; transform: scale(1.05); }
 
@@ -105,7 +104,6 @@
         .map-link { color: #00bfff; text-decoration: none; font-size: 11px; font-weight: bold; margin-bottom: 10px; display: block; }
         .empty-msg { color: #555; font-style: italic; width: 100%; text-align: center; }
 
-        /* Business Options */
         .biz-opt-container { text-align: left; margin-top: 15px; border-top: 1px solid #444; padding-top: 10px; }
         .biz-opt-item { display: flex; align-items: center; gap: 10px; font-size: 10px; color: #bbb; margin-bottom: 5px; cursor: pointer; }
         .biz-opt-item input { accent-color: #55ff55; cursor: pointer; }
@@ -188,15 +186,7 @@
 
         <div id="page-biz" class="page-section">
             <h2 style="text-align:center;">Priorite d'achat des Business</h2>
-            <div class="priority-choice-box">
-                <div class="choice-msg">(Selon vos gout et vos choix) choisir ce que vous souhaitez faire en premier</div>
-                <div class="choice-buttons">
-                    <button id="choice-bureau" class="btn-choice" onclick="setPriorityChoice('bureau')">Bureau de PDG</button>
-                    <button id="choice-club" class="btn-choice" onclick="setPriorityChoice('club')">Club de motards</button>
-                </div>
-            </div>
             <div class="grid-container" id="business-priority-list"></div>
-            
             <h2 id="title-100" style="text-align:center; color:#aa00ff; margin-top:50px; display:none;">Business a 100%</h2>
             <div class="grid-container" id="business-completed-list"></div>
         </div>
@@ -204,7 +194,6 @@
         <div id="page-depart" class="page-section">
             <div class="char-manager" style="max-width:600px;">
                 <h2 style="border:none; margin-top:0;">Depart conseille Enchanced</h2>
-                <p style="color:#888; font-size:12px; margin-bottom:20px;">Cochez l'etape pour la valider et la masquer.</p>
                 <ul id="depart-task-list" class="depart-list"></ul>
                 <button class="btn-reset-depart" onclick="resetDepartTasks()">Reset la liste</button>
             </div>
@@ -283,7 +272,6 @@
                 loadCharacterData();
                 const settings = JSON.parse(localStorage.getItem(activeChar + '_settings')) || { showDepart: true };
                 document.getElementById('main-nav-bar').style.display = 'flex';
-                document.getElementById('nav-depart-btn').style.display = settings.showDepart ? 'block' : 'none';
                 switchPage('routine');
                 renderBusinessPriority();
                 initCards();
@@ -300,31 +288,9 @@
             ownedBusinesses = JSON.parse(localStorage.getItem(activeChar + '_owned_biz')) || {};
             currentFarmMode = localStorage.getItem(activeChar + '_farm_mode') || 'entier';
             prioPref = localStorage.getItem(activeChar + '_prio_pref_67') || 'bureau';
-            updateChoiceButtons();
         }
 
-        function setPriorityChoice(choice) {
-            prioPref = choice;
-            localStorage.setItem(activeChar + '_prio_pref_67', choice);
-            updateChoiceButtons();
-            renderBusinessPriority();
-            refreshAllStates();
-        }
-
-        function updateChoiceButtons() {
-            const btnB = document.getElementById('choice-bureau'), btnC = document.getElementById('choice-club');
-            if(btnB && btnC) { btnB.classList.toggle('active', prioPref === 'bureau'); btnC.classList.toggle('active', prioPref === 'club'); }
-        }
-
-        function getBusinessStatus(asset) {
-            if (!ownedBusinesses[asset.cat]) return 'todo';
-            const mandatory = asset.options.filter(o => !o.label.includes('(facultatif)'));
-            const mandatoryDone = mandatory.every(o => ownedBusinesses[o.id]);
-            const allDone = asset.options.every(o => ownedBusinesses[o.id]);
-            if (allDone) return 'complete100';
-            if (mandatoryDone) return 'optionalOnly'; 
-            return 'todo'; 
-        }
+        function resetAllData() { if(confirm("Supprimer TOUT ?")) { localStorage.clear(); location.reload(); } }
 
         function renderBusinessPriority() {
             const prioContainer = document.getElementById('business-priority-list');
@@ -340,32 +306,25 @@
             let assets = [
                 { id: 'kosatka', label: 'KOSATKA', cat: 'kosatka', prio: 1, options: [{ id: 'sparrow', label: 'Sparrow' }, { id: 'sonar', label: 'Sonar (facultatif)' }, { id: 'missile', label: 'Missile autoguides (facultatif)' }, { id: 'atelier-arme-kos', label: 'Ateliers d armes (facultatif)' }, { id: 'kraken', label: 'Kraken Avisa (facultatif)' }] },
                 { id: 'agence', label: 'AGENCE', cat: 'agence', prio: 2, videoLink: { label: 'Tuto', url: 'https://www.youtube.com/watch?v=3RZenVDfiMM' }, options: [{ id: 'armurerie', label: 'Armurerie' }, { id: 'logement', label: 'Logement (facultatif)' }, { id: 'atelier-vehicule', label: 'Atelier vehicule (facultatif)' }] },
-                { id: 'atelier-auto', label: 'ATELIER AUTO', cat: 'atelier-auto', prio: 3, videoLink: { label: 'Tuto', url: 'https://www.youtube.com/watch?v=P5ikkNYH17A' }, options: [{ id: 'pont-elevateur', label: 'Pont elevateur' }, { id: 'personnel-auto', label: 'Personnel (facultatif)' }, { id: 'logement-auto', label: 'Espace personnel (facultatif)' }] }
-            ];
-
-            const bureau = { id: 'import-export', label: 'BUREAU DE PDG', cat: 'import-export', videoLink: { label: 'Tuto', url: 'https://www.youtube.com/watch?v=o3SPX3O5HmY&t=2s' }, options: [{ id: 'entrepot-mini', label: 'entrepot' }, { id: 'entrepot-voiture', label: 'entrepot voiture' + vOrangePDG }, { id: 'coffre-pdg', label: 'Coffre-fort (facultatif)' }, { id: 'arm-pdg', label: 'Armurerie (facultatif)' }, { id: 'log-pdg', label: 'Logement (facultatif)' }] };
-            const club = { 
-                id: 'club-moto', label: 'CLUB DE MOTARDS', cat: 'club-moto', videoLink: { label: 'Tuto', url: 'https://www.youtube.com/watch?v=4GQNZKdU87o' }, 
-                options: [
-                    { id: 'atelier-mc', label: 'atelier moto' }, 
-                    { id: 'prod-coke', label: 'prod cocaine' }, 
-                    { id: 'coke-mat', label: 'materiel' + vOrange, sub: true }, { id: 'coke-perso', label: 'personnel' + vOrange, sub: true }, { id: 'coke-secu', label: 'securite (facultatif)', sub: true },
-                    { id: 'prod-meth', label: 'prod meth' }, 
-                    { id: 'meth-mat', label: 'materiel' + vOrange, sub: true }, { id: 'meth-perso', label: 'personnel' + vOrange, sub: true }, { id: 'meth-secu', label: 'securite (facultatif)', sub: true },
-                    { id: 'prod-cash', label: 'prod fausse monnaie' }, 
-                    { id: 'cash-mat', label: 'materiel' + vOrange, sub: true }, { id: 'cash-perso', label: 'personnel' + vOrange, sub: true }, { id: 'cash-secu', label: 'securite (facultatif)', sub: true },
-                    { id: 'prod-weed', label: 'prod herbe' + vOrangeWeed }, 
-                    { id: 'weed-mat', label: 'materiel', sub: true }, { id: 'weed-perso', label: 'personnel', sub: true }, { id: 'weed-secu', label: 'securite (facultatif)', sub: true },
-                    { id: 'prod-docs', label: 'prod faux papier (facultatif)' },
-                    { id: 'docs-mat', label: 'materiel (facultatif)', sub: true }, { id: 'docs-perso', label: 'personnel (facultatif)', sub: true }, { id: 'docs-secu', label: 'securite (facultatif)', sub: true },
-                    { id: 'arm-mc', label: 'armurerie (facultatif)' }
-                ] 
-            };
-
-            if(prioPref === 'bureau') { bureau.prio = 4; club.prio = 5; assets.push(bureau, club); }
-            else { club.prio = 4; bureau.prio = 5; assets.push(club, bureau); }
-
-            assets.push(
+                { id: 'atelier-auto', label: 'ATELIER AUTO', cat: 'atelier-auto', prio: 3, videoLink: { label: 'Tuto', url: 'https://www.youtube.com/watch?v=P5ikkNYH17A' }, options: [{ id: 'pont-elevateur', label: 'Pont elevateur' }, { id: 'personnel-auto', label: 'Personnel (facultatif)' }, { id: 'logement-auto', label: 'Espace personnel (facultatif)' }] },
+                { id: 'import-export', label: 'BUREAU DE PDG', cat: 'import-export', prio: 4, videoLink: { label: 'Tuto', url: 'https://www.youtube.com/watch?v=o3SPX3O5HmY&t=2s' }, options: [{ id: 'entrepot-mini', label: 'entrepot' }, { id: 'entrepot-voiture', label: 'entrepot voiture' + vOrangePDG }, { id: 'coffre-pdg', label: 'Coffre-fort (facultatif)' }, { id: 'arm-pdg', label: 'Armurerie (facultatif)' }, { id: 'log-pdg', label: 'Logement (facultatif)' }] },
+                { 
+                    id: 'club-moto', label: 'CLUB DE MOTARDS', cat: 'club-moto', prio: 5, videoLink: { label: 'Tuto', url: 'https://www.youtube.com/watch?v=4GQNZKdU87o' }, 
+                    options: [
+                        { id: 'atelier-mc', label: 'atelier moto' }, 
+                        { id: 'prod-coke', label: 'prod cocaine' }, 
+                        { id: 'coke-mat', label: 'materiel' + vOrange, sub: true }, { id: 'coke-perso', label: 'personnel' + vOrange, sub: true }, { id: 'coke-secu', label: 'securite (facultatif)', sub: true },
+                        { id: 'prod-meth', label: 'prod meth' }, 
+                        { id: 'meth-mat', label: 'materiel' + vOrange, sub: true }, { id: 'meth-perso', label: 'personnel' + vOrange, sub: true }, { id: 'meth-secu', label: 'securite (facultatif)', sub: true },
+                        { id: 'prod-cash', label: 'prod fausse monnaie' }, 
+                        { id: 'cash-mat', label: 'materiel' + vOrange, sub: true }, { id: 'cash-perso', label: 'personnel' + vOrange, sub: true }, { id: 'cash-secu', label: 'securite (facultatif)', sub: true },
+                        { id: 'prod-weed', label: 'prod herbe' + vOrangeWeed }, 
+                        { id: 'weed-mat', label: 'materiel', sub: true }, { id: 'weed-perso', label: 'personnel', sub: true }, { id: 'weed-secu', label: 'securite (facultatif)', sub: true },
+                        { id: 'prod-docs', label: 'prod faux papier (facultatif)' },
+                        { id: 'docs-mat', label: 'materiel (facultatif)', sub: true }, { id: 'docs-perso', label: 'personnel (facultatif)', sub: true }, { id: 'docs-secu', label: 'securite (facultatif)', sub: true },
+                        { id: 'arm-mc', label: 'armurerie (facultatif)' }
+                    ] 
+                },
                 { id: 'bunker', label: 'BUNKER', cat: 'bunker', prio: 6, videoLink: { label: 'Tuto', url: 'https://www.youtube.com/watch?v=s1ALq7cd_QI&t=52s' }, options: [{ id: 'bunk-tir', label: 'stand de tir' }, { id: 'mat-bunk', label: 'materiel' }, { id: 'perso-bunk', label: 'personnel' }, { id: 'secu-bunk', label: 'securite (facultatif)' }, { id: 'bunk-log', label: 'espace personnel (facultatif)' }, { id: 'bunk-arm', label: 'armurerie (facultatif)' }, { id: 'bunk-trans', label: 'transport (facultatif)' }] },
                 { id: 'boite-nuit', label: 'BOITE DE NUIT', cat: 'boite-nuit', prio: 7, videoLink: { label: 'Tuto', url: 'https://www.youtube.com/watch?v=XDll4lKCoKA' }, options: [{ id: 'ent-2', label: 'entrepot 2' }, { id: 'ent-3', label: 'entrepot 3' }, { id: 'ent-4', label: 'entrepot 4' }, { id: 'ent-5', label: 'entrepot 5' }, { id: 'tech-2', label: 'technicien 2' }, { id: 'tech-3', label: 'technicien 3' }, { id: 'tech-4', label: 'technicien 4' }, { id: 'tech-5', label: 'technicien 5' }, { id: 'mat-boite', label: 'materiel' }, { id: 'perso-boite', label: 'personnel' }, { id: 'secu-boite', label: 'securite (facultatif)' }] },
                 { id: 'acide', label: 'LABO D ACIDE', cat: 'acide', prio: 8, videoLink: { label: 'Tuto', url: 'https://www.youtube.com/watch?v=DVDEVHp4Zm0' }, options: [{ id: 'acide-inst', label: 'installation du materiel' }, { id: 'acide-up', label: 'amelioration du materiel' }] },
@@ -379,7 +338,7 @@
                 { id: 'manoir', label: 'LE MANOIR', cat: 'manoir', prio: 16, options: [{ id: 'manoir-secu', label: 'securite ' + vGreenManoir }] },
                 { id: 'arcade', label: 'SALLE D ARCADE', cat: 'arcade', prio: 17, options: [{ id: 'arcade-bornes', label: 'toutes les borne d arcade' }] },
                 { id: 'complexe', label: 'LE COMPLEXE', cat: 'complexe', prio: 18, options: [] }
-            );
+            ];
 
             const activeAssets = assets.filter(a => getBusinessStatus(a) !== 'complete100');
             const complete100List = assets.filter(a => getBusinessStatus(a) === 'complete100');
@@ -395,7 +354,7 @@
             card.className = `card ${!isOwned ? 'locked' : ''} ${is100 ? 'complete-100' : ''}`;
             let videoHtml = asset.videoLink ? `<a href="${asset.videoLink.url}" target="_blank" class="video-link" style="display:block; margin-bottom:10px;">[ ${asset.videoLink.label} ]</a>` : '';
             let optionsHtml = '';
-            if (asset.options.length > 0) {
+            if (asset.options && asset.options.length > 0) {
                 optionsHtml = `<div class="biz-opt-container">`;
                 asset.options.forEach(opt => {
                     const optOwned = ownedBusinesses[opt.id] === true;
@@ -408,9 +367,7 @@
             container.appendChild(card);
         }
 
-        // --- SYSTEM FUNCTIONS ---
-        function resetAllData() { if(confirm("Supprimer TOUT ?")) { localStorage.clear(); location.reload(); } }
-        
+        // --- CORE FUNCTIONS ---
         function renderCharList() {
             const list = document.getElementById('char-list'); if(!list) return;
             list.innerHTML = '';
@@ -436,7 +393,7 @@
             if(confirm(`Supprimer ${name} ?`)) {
                 characters = characters.filter(c => c !== name); localStorage.setItem('gta_characters', JSON.stringify(characters));
                 const keys = Object.keys(localStorage).filter(k => k.startsWith(name + '_')); keys.forEach(k => localStorage.removeItem(k));
-                localStorage.removeItem(name + '_settings'); if (activeChar === name) localStorage.removeItem('gta_active_char');
+                if (activeChar === name) localStorage.removeItem('gta_active_char');
                 location.reload();
             }
         }
@@ -490,10 +447,8 @@
         function resetAllFarmLoop() {
             if(confirm("Réinitialiser toutes les activités de farm terminées ?")) {
                 activities.forEach(act => {
-                    if (act.type === 'farm') {
-                        const end = localStorage.getItem(activeChar + '_' + act.id + '_endTime');
-                        if (end && parseInt(end) <= Date.now()) resetTimer(act.id);
-                    }
+                    const end = localStorage.getItem(activeChar + '_' + act.id + '_endTime');
+                    if (end && parseInt(end) <= Date.now()) resetTimer(act.id);
                 });
             }
         }
@@ -516,11 +471,7 @@
         function setCardState(id, isRunning) {
             const act = activities.find(a => a.id === id); const card = document.getElementById('card-' + id); if(!card) return;
             const display = document.getElementById('display-' + id); 
-            const btnS = card.querySelector('.btn-start'), 
-                  btnR = card.querySelector('.btn-reset'), 
-                  btnM = card.querySelector('.btn-manual-reset'),
-                  map = card.querySelector('.map-link'),
-                  tuto = card.querySelector('.tuto-link');
+            const btnS = card.querySelector('.btn-start'), btnR = card.querySelector('.btn-reset'), btnM = card.querySelector('.btn-manual-reset'), map = card.querySelector('.map-link'), tuto = card.querySelector('.tuto-link');
 
             if (id === 'secu' && currentFarmMode !== 'ultra') { card.style.display = 'none'; return; }
             const alwaysOn = ['global', 'collectable', 'braquage'].includes(act.cat);
@@ -538,6 +489,7 @@
             card.style.display = 'flex';
 
             const endValue = localStorage.getItem(activeChar + '_' + id + '_endTime');
+            const isException = (id === 'nightclub' || id === 'contrat'); // Les exceptions demandées
 
             if (isRunning) {
                 document.getElementById('section-encours').appendChild(card);
@@ -545,14 +497,14 @@
                 card.style.borderColor = '#ff5555'; display.style.color = '#ff5555'; 
                 if (map) map.style.display = 'none'; if (tuto) tuto.style.display = 'none';
             } else {
-                if (endValue && parseInt(endValue) <= Date.now() && act.type === 'farm') {
-                    // CAS : FINI MAIS ATTENTE RESET (seulement pour type farm)
-                    document.getElementById('section-dispo').appendChild(card);
+                if (endValue && parseInt(endValue) <= Date.now() && act.type === 'farm' && !isException) {
+                    // CAS : FINI MAIS RESTE EN BAS (Attente Reset)
+                    document.getElementById('section-encours').appendChild(card);
                     btnS.style.display = 'none'; btnR.style.display = 'none'; btnM.style.display = 'block';
                     display.innerHTML = 'A RÉINITIALISER'; display.style.color = '#aa00ff'; card.style.borderColor = '#aa00ff';
                     if (map) map.style.display = 'none'; if (tuto) tuto.style.display = 'none';
                 } else {
-                    // CAS : DISPONIBLE NORMALEMENT
+                    // CAS : PRÊT (En haut)
                     document.getElementById('section-dispo').appendChild(card);
                     btnS.style.display = 'block'; btnR.style.display = 'none'; btnM.style.display = 'none';
                     display.innerHTML = 'PRET !'; display.style.color = '#fff'; card.style.borderColor = '#55ff55';
