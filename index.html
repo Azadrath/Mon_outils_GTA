@@ -67,6 +67,10 @@
         .tgl-btn.active { background: #55ff55; color: #000; border-color: #55ff55; }
         .tgl-farm-mode.active { background: #aa00ff; color: #fff; border-color: #aa00ff; }
         
+        /* Bouton Reset Boucle */
+        .btn-reset-loop { background-color: #aa00ff; color: white; border: none; padding: 12px 25px; border-radius: 5px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 20px; font-size: 12px; transition: 0.3s; }
+        .btn-reset-loop:hover { background-color: #cc33ff; transform: scale(1.05); }
+
         .video-link { color: #00bfff; font-size: 10px; text-decoration: none; font-weight: bold; text-transform: uppercase; margin-top: 5px; }
         .video-link:hover { text-decoration: underline; }
 
@@ -92,20 +96,14 @@
         .badge-usine-vetements { background-color: #d35400; } .badge-terrorbyte { background-color: #2f3640; } .badge-laverie-auto { background-color: #1dd1a1; }
 
         .timer-display { font-size: 20px; font-weight: bold; margin: 10px 0; }
-        button.action-btn { cursor: pointer; border: none; border-radius: 4px; padding: 8px; font-weight: bold; text-transform: uppercase; font-size: 11px; width: 100%; }
+        button.action-btn { cursor: pointer; border: none; border-radius: 4px; padding: 8px; font-weight: bold; text-transform: uppercase; font-size: 11px; width: 100%; margin-top: 5px; }
         .btn-owned { background-color: #55ff55; color: #000; }
         .btn-not-owned { background-color: #444; color: #888; }
         .btn-start { background-color: #55ff55; color: #000; }
-        .btn-reset { background-color: #ff5555; color: #fff; display: none; }
+        .btn-reset { background-color: #ff5555; color: #fff; }
+        .btn-manual-reset { background-color: #aa00ff; color: white; }
         .map-link { color: #00bfff; text-decoration: none; font-size: 11px; font-weight: bold; margin-bottom: 10px; display: block; }
         .empty-msg { color: #555; font-style: italic; width: 100%; text-align: center; }
-
-        /* Business Selection Choice */
-        .priority-choice-box { background: #262626; padding: 15px; border-radius: 10px; border: 1px solid #55ff55; margin: 0 auto 20px; display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; max-width: 500px; text-align: center; }
-        .choice-buttons { display: flex; gap: 10px; }
-        .btn-choice { padding: 10px 20px; border-radius: 5px; border: 1px solid #444; background: #1a1a1a; color: #888; cursor: pointer; font-weight: bold; font-size: 11px; }
-        .btn-choice.active { background: #55ff55; color: #000; border-color: #55ff55; }
-        .choice-msg { font-size: 11px; color: #fff; font-weight: bold; line-height: 1.4; margin-bottom: 5px; }
 
         /* Business Options */
         .biz-opt-container { text-align: left; margin-top: 15px; border-top: 1px solid #444; padding-top: 10px; }
@@ -144,6 +142,7 @@
                     <label><input type="checkbox" id="check-depart-option" checked> premier personnage du compte</label>
                 </div>
                 <button class="btn-select" style="width:100%; margin-top:15px; padding:10px;" onclick="createNewCharacter()">Creer le personnage</button>
+                <button onclick="resetAllData()" style="background:none; border:1px solid #ff5555; color:#ff5555; margin-top:30px; cursor:pointer; font-size:10px; padding:5px; border-radius:3px; width:100%;">Réinitialiser TOUTE l'application</button>
             </div>
         </div>
 
@@ -175,6 +174,7 @@
                         <button id="mode-jh" class="tgl-btn tgl-farm-mode" onclick="setFarmMode('jh')">Journa et Hebdo</button>
                     </div>
                 </div>
+                <button class="btn-reset-loop" onclick="resetAllFarmLoop()">Reset la Boucle de Farm</button>
             </div>
 
             <h2 id="active-char-title" style="color: #55ff55; margin-top:30px;">Personnage : Aucun</h2>
@@ -318,14 +318,9 @@
 
         function getBusinessStatus(asset) {
             if (!ownedBusinesses[asset.cat]) return 'todo';
-            
-            // Mandatory = lignes qui ne sont ni (facultatif) ni orange (vivid-text)
             const mandatory = asset.options.filter(o => !o.label.includes('(facultatif)'));
             const mandatoryDone = mandatory.every(o => ownedBusinesses[o.id]);
-            
-            // allDone = TOUTES les options cochées
             const allDone = asset.options.every(o => ownedBusinesses[o.id]);
-            
             if (allDone) return 'complete100';
             if (mandatoryDone) return 'optionalOnly'; 
             return 'todo'; 
@@ -386,22 +381,10 @@
                 { id: 'complexe', label: 'LE COMPLEXE', cat: 'complexe', prio: 18, options: [] }
             );
 
-            // Classification des listes
-            const todoList = [];          
-            const optionalOnlyList = [];  
-            const complete100List = [];   
+            const activeAssets = assets.filter(a => getBusinessStatus(a) !== 'complete100');
+            const complete100List = assets.filter(a => getBusinessStatus(a) === 'complete100');
 
-            assets.forEach(asset => {
-                const status = getBusinessStatus(asset);
-                if (status === 'complete100') complete100List.push(asset);
-                else if (status === 'optionalOnly') optionalOnlyList.push(asset);
-                else todoList.push(asset);
-            });
-
-            // Rendu ordonné
-            todoList.sort((a,b) => a.prio - b.prio).forEach(a => createBizCard(a, prioContainer));
-            optionalOnlyList.sort((a,b) => a.prio - b.prio).forEach(a => createBizCard(a, prioContainer));
-            
+            activeAssets.sort((a,b) => a.prio - b.prio).forEach(a => createBizCard(a, prioContainer));
             document.getElementById('title-100').style.display = complete100List.length > 0 ? 'block' : 'none';
             complete100List.sort((a,b) => a.prio - b.prio).forEach(a => createBizCard(a, compContainer, true));
         }
@@ -410,9 +393,7 @@
             const isOwned = ownedBusinesses[asset.cat] === true;
             const card = document.createElement('div');
             card.className = `card ${!isOwned ? 'locked' : ''} ${is100 ? 'complete-100' : ''}`;
-            
             let videoHtml = asset.videoLink ? `<a href="${asset.videoLink.url}" target="_blank" class="video-link" style="display:block; margin-bottom:10px;">[ ${asset.videoLink.label} ]</a>` : '';
-            
             let optionsHtml = '';
             if (asset.options.length > 0) {
                 optionsHtml = `<div class="biz-opt-container">`;
@@ -428,6 +409,8 @@
         }
 
         // --- SYSTEM FUNCTIONS ---
+        function resetAllData() { if(confirm("Supprimer TOUT ?")) { localStorage.clear(); location.reload(); } }
+        
         function renderCharList() {
             const list = document.getElementById('char-list'); if(!list) return;
             list.innerHTML = '';
@@ -480,7 +463,7 @@
                 const card = document.createElement('div'); card.className = 'card'; card.id = 'card-' + act.id;
                 let map = act.map ? `<a href="https://gtaweb.eu/gtao-map" target="_blank" class="map-link">[ Voir la carte ]</a>` : '';
                 let tuto = act.tuto ? `<a href="${act.tuto}" target="_blank" class="video-link tuto-link" style="display:block; margin-bottom:10px;">[ Tuto ]</a>` : '';
-                card.innerHTML = `<div class="badge-container"><span class="badge badge-${act.type}">${act.type}</span><span class="badge badge-${act.cat}">${act.cat.replace(/-/g, ' ')}</span></div><div class="timer-title">${act.title}</div>${map}${tuto}<div class="timer-display" id="display-${act.id}">PRET !</div><button class="action-btn btn-start" onclick="triggerStart('${act.id}')">Valider</button><button class="action-btn btn-reset" onclick="resetTimer('${act.id}')">Annuler</button>`;
+                card.innerHTML = `<div class="badge-container"><span class="badge badge-${act.type}">${act.type}</span><span class="badge badge-${act.cat}">${act.cat.replace(/-/g, ' ')}</span></div><div class="timer-title">${act.title}</div>${map}${tuto}<div class="timer-display" id="display-${act.id}">PRET !</div><button class="action-btn btn-start" onclick="triggerStart('${act.id}')">Valider</button><button class="action-btn btn-manual-reset" style="display:none;" onclick="resetTimer('${act.id}')">Reset</button><button class="action-btn btn-reset" style="display:none;" onclick="resetTimer('${act.id}')">Annuler</button>`;
                 container.appendChild(card);
             });
         }
@@ -504,6 +487,17 @@
         }
         function resetTimer(id) { if (timers[id]) clearInterval(timers[id]); localStorage.removeItem(activeChar + '_' + id + '_endTime'); refreshAllStates(); }
         
+        function resetAllFarmLoop() {
+            if(confirm("Réinitialiser toutes les activités de farm terminées ?")) {
+                activities.forEach(act => {
+                    if (act.type === 'farm') {
+                        const end = localStorage.getItem(activeChar + '_' + act.id + '_endTime');
+                        if (end && parseInt(end) <= Date.now()) resetTimer(act.id);
+                    }
+                });
+            }
+        }
+
         function setFarmMode(mode) {
             currentFarmMode = mode; localStorage.setItem(activeChar + '_farm_mode', mode);
             document.querySelectorAll('.tgl-farm-mode').forEach(b => b.classList.remove('active'));
@@ -524,6 +518,7 @@
             const display = document.getElementById('display-' + id); 
             const btnS = card.querySelector('.btn-start'), 
                   btnR = card.querySelector('.btn-reset'), 
+                  btnM = card.querySelector('.btn-manual-reset'),
                   map = card.querySelector('.map-link'),
                   tuto = card.querySelector('.tuto-link');
 
@@ -543,31 +538,25 @@
             card.style.display = 'flex';
 
             const endValue = localStorage.getItem(activeChar + '_' + id + '_endTime');
-            const dreIs = localStorage.getItem(activeChar + '_drdre_endTime') > Date.now(), motoIs = localStorage.getItem(activeChar + '_moto1_endTime') > Date.now(), unionIs = localStorage.getItem(activeChar + '_union_endTime') > Date.now(), cluckIs = localStorage.getItem(activeChar + '_cluckin_endTime') > Date.now();
-            
-            let lock = false, msg = "ATTENTE";
-            if (currentFarmMode === 'entier') { lock = ownedBusinesses['agence'] && !dreIs; msg = "ATTENTE DRE"; }
-            else if (currentFarmMode === 'leger') { lock = !motoIs; msg = "ATTENTE MOTO"; }
-            else if (currentFarmMode === 'normal') { lock = !unionIs; msg = "ATTENTE UNION"; }
-            else if (currentFarmMode === 'normalplus') { lock = !cluckIs; msg = "ATTENTE CLUCKIN"; }
 
             if (isRunning) {
                 document.getElementById('section-encours').appendChild(card);
-                btnS.style.display = 'none'; btnR.style.display = 'block'; card.style.borderColor = '#ff5555'; display.style.color = '#ff5555'; 
-                if (map) map.style.display = 'none';
-                if (tuto) tuto.style.display = 'none';
+                btnS.style.display = 'none'; btnM.style.display = 'none'; btnR.style.display = 'block'; 
+                card.style.borderColor = '#ff5555'; display.style.color = '#ff5555'; 
+                if (map) map.style.display = 'none'; if (tuto) tuto.style.display = 'none';
             } else {
-                const isExc = (id === 'drdre' || id === 'contrat' || id === 'nightclub' || id === 'moto1' || id === 'union' || id === 'cluckin');
-                if (!endValue || isExc || !lock) {
+                if (endValue && parseInt(endValue) <= Date.now() && act.type === 'farm') {
+                    // CAS : FINI MAIS ATTENTE RESET (seulement pour type farm)
                     document.getElementById('section-dispo').appendChild(card);
-                    btnS.style.display = 'block'; btnR.style.display = 'none'; display.innerHTML = 'PRET !'; display.style.color = '#fff'; card.style.borderColor = '#55ff55'; 
-                    if (map) map.style.display = 'block';
-                    if (tuto) tuto.style.display = 'block';
+                    btnS.style.display = 'none'; btnR.style.display = 'none'; btnM.style.display = 'block';
+                    display.innerHTML = 'A RÉINITIALISER'; display.style.color = '#aa00ff'; card.style.borderColor = '#aa00ff';
+                    if (map) map.style.display = 'none'; if (tuto) tuto.style.display = 'none';
                 } else {
-                    document.getElementById('section-encours').appendChild(card);
-                    btnS.style.display = 'none'; btnR.style.display = 'none'; display.innerHTML = msg; display.style.color = '#888'; card.style.borderColor = '#444'; 
-                    if (map) map.style.display = 'none';
-                    if (tuto) tuto.style.display = 'none';
+                    // CAS : DISPONIBLE NORMALEMENT
+                    document.getElementById('section-dispo').appendChild(card);
+                    btnS.style.display = 'block'; btnR.style.display = 'none'; btnM.style.display = 'none';
+                    display.innerHTML = 'PRET !'; display.style.color = '#fff'; card.style.borderColor = '#55ff55';
+                    if (map) map.style.display = 'block'; if (tuto) tuto.style.display = 'block';
                 }
                 sortDispo();
             }
@@ -581,7 +570,6 @@
             else if (currentFarmMode === 'normal') order = normalIds;
             else if (currentFarmMode === 'normalplus') order = normalPlusIds;
             else if (currentFarmMode === 'ultra') order = ultraIds;
-
             if (order.length > 0) {
                 Array.from(container.children).sort((a, b) => {
                     const idA = a.id.replace('card-', ''), idB = b.id.replace('card-', '');
